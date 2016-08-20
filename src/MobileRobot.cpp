@@ -48,6 +48,22 @@ MobileRobot::MobileRobot(const MobileRobot& other)
 //    std::cout << "Copy constructor called" << std::endl;
 }
 
+void MobileRobot::operator=(const MobileRobot& other)
+{
+    position[0] = other.position[0];
+    position[1] = other.position[1];
+    orientation = other.orientation;
+    for (unsigned int i = 0; i < (int)CIRCLE_RES; ++i) {
+        verts[i][0] = 0.5f*cos((float)i/CIRCLE_RES*6.2832);
+        verts[i][1] = 0.5f*sin((float)i/CIRCLE_RES*6.2832);
+    }
+    set_map(other.gt_map);      // Ground-truth map
+    color[0] = other.color[0];
+    color[1] = other.color[1];
+    color[2] = other.color[2];
+//    std::cout << "Copy constructor called" << std::endl;
+}
+
 void MobileRobot::set_color(float r, float g, float b) {
 	color[0] = r; color[1] = g; color[2] = b;
 }

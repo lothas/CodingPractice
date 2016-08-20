@@ -30,13 +30,17 @@ public:
 
 	virtual ~ParticleFilter();
 
+	bool render_all = true;
+
 private:
 	int nParticles;
 	vector<MobileRobot> particles;
 
-	MobileRobot* robot;
+	MobileRobot* robot = nullptr;
 	Matrix2D* gt_map = nullptr;
 	Matrix2D kernel = Matrix2D(3,3,1);
+
+	float circ_points[12][2];
 };
 
 #endif /* PARTICLEFILTER_H_ */

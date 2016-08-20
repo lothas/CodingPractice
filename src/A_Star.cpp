@@ -69,8 +69,8 @@ void A_Star::visit_neighbors(unsigned int row, unsigned int col) {
                 // We found an unvisited neighbor
                 a_map_mat->data[new_row][new_col] = 2;
                 a_map_val->data[new_row][new_col] = a_map_val->data[row][col] + 1;
-                pqueue.push(1./(a_map_val->data[new_row][new_col] + heur(new_row, new_col)),
-                            new_row, new_col);
+                pqueue.push(HeapNode(1./(a_map_val->data[new_row][new_col] + heur(new_row, new_col)),
+                            new_row, new_col));
             }
         }
     }

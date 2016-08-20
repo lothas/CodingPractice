@@ -30,7 +30,7 @@ class A_Star
 
         Matrix2D* a_map_mat = nullptr;
         Matrix2D* a_map_val = nullptr;
-        Heap pqueue = Heap();
+        Heap<HeapNode> pqueue;
         SinglyLLint path = SinglyLLint();
         unsigned int state = 0;
 

@@ -18,6 +18,8 @@ class MobileRobot
         virtual ~MobileRobot();
         MobileRobot(const MobileRobot& other);
 
+        void operator=(const MobileRobot& other);
+
         void set_color(float r, float g, float b);
         void render();
 
@@ -37,7 +39,8 @@ class MobileRobot
         Matrix2D local_map;    			// Locally generated map (not implemented yet)
         // TODO: Implement mapping
 
-        const int sense_dist = 4;
+        const int sense_dist = 5;
+        float score = 1;
     protected:
 
     private:

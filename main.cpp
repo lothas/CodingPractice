@@ -8,7 +8,7 @@
 #include "ParticleFilter.h"
 #include "Matrix2D.h"
 
-#define N_PARTICLES 50
+#define N_PARTICLES 1000
 
 using namespace std;
 
@@ -90,6 +90,9 @@ void keyboard(unsigned char key, int x, int y)
             break;
         case 'p':           // Start planning with A*
             mode = 1;
+            break;
+        case 's':           // Toggle particle filter render
+            pFilt.render_all = !pFilt.render_all;
             break;
     }
 }

@@ -36,12 +36,65 @@ void ParticleFilter::initialize() {
     // [[1,1,1]
     //  [1,2,1]
     //  [1,1,1]]
+
+    // Initialize circle points for render
+    for (unsigned int i = 0; i < 12; ++i) {
+    	circ_points[i][0] = 0.5f*cos((float)i/12*6.2832);
+    	circ_points[i][1] = 0.5f*sin((float)i/12*6.2832);
+    }
 }
 
 void ParticleFilter::render() {
-    for (int i = 0; i<nParticles; ++i) {
-    	particles.at(i).render();
-    }
+	float position[2] = {0, 0};
+	float orientation = 0;
+	float score_sum = 0;
+	// Calculate filtered position
+	for (int i = 0; i<nParticles; ++i) {
+		if (render_all) particles.at(i).render(); // Render all particles if option enabled
+		position[0] += particles.at(i).score*particles.at(i).position[0];
+		position[1] += particles.at(i).score*particles.at(i).position[1];
+		orientation += particles.at(i).score*particles.at(i).orientation;
+		score_sum += particles.at(i).score;
+	}
+	position[0] /= (float)score_sum;
+	position[1] /= (float)score_sum;
+	orientation /= (float)score_sum;
+
+	float spread = 0;
+	for (int i = 0; i<nParticles; ++i) {
+		float pdiff[3] = {position[0]-particles.at(i).position[0],
+						  position[1]-particles.at(i).position[1],
+						  orientation-particles.at(i).orientation};
+		spread += particles.at(i).score*sqrt(pdiff[0]*pdiff[0]+pdiff[1]*pdiff[1]+pdiff[2]*pdiff[2]);
+	}
+	spread /= (float)score_sum;
+	std::cout << "Filtered localization: (" <<
+			position[0] << ", " << position[1] <<
+			") with confidence = " << spread << std::endl;
+
+	// Render filter result
+	glPushMatrix();
+    	glLineWidth(2);
+		glScalef(1.0f/(float)gt_map->cols, 1.0f/(float)gt_map->rows, 1.0f);
+		glTranslatef((float)position[1]+0.5f,
+					 float(gt_map->rows - 1 - position[0])+0.5f, 0);
+        glRotatef(-90.0f+orientation*90.0f, 0.0f, 0.0f, -1.0f);
+        glScalef(spread, spread, 1);
+		// Draw circle
+		glBegin(GL_LINE_LOOP);
+			glColor3f(0.0f, 0.0f, 0.0f);
+			for (unsigned int i = 0; i < 12; ++i) {
+				glVertex2f(circ_points[i][0], circ_points[i][1]);
+			}
+		glEnd();
+		// Draw orientation triangle
+		glBegin(GL_LINE_LOOP);
+			glColor3f(0.0f, 0.0f, 0.0f);
+			glVertex2f(0.35f, 0.0f);
+			glVertex2f(-0.3f, 0.25f);
+			glVertex2f(-0.3f, -0.25f);
+		glEnd();
+    glPopMatrix();
 }
 
 void ParticleFilter::actuate(act_type action) {
@@ -83,13 +136,14 @@ void ParticleFilter::sense() {
 
     // Update particle color based on sense accuracy
     for (int i = 0; i<nParticles; ++i) {
-    	float val = ((float)sense_acc.at(i)-min_acc)/max_acc;
-    	particles.at(i).set_color(1.0f-val, val, 0.0f);
+    	float val = ((float)sense_acc.at(i)-min_acc)/max_acc; // Normalize new score
+    	particles.at(i).score = (9.*particles.at(i).score + val)/10.0; // Update score "average"
+    	particles.at(i).set_color(1.0f-particles.at(i).score, particles.at(i).score, 0.0f);
 
-    	if (val<0.5 && max_acc-min_acc > 2) {
+    	if (particles.at(i).score<0.3) {
     		// Discard particle and replace with new one
     		int row, col, ori;
-    		if (rand()%10 >= 9) {
+    		if (rand()%10 >= 7) {
     			// Replace with random particle
     			col = rand()%gt_map->cols;
     			row = rand()%gt_map->rows;
